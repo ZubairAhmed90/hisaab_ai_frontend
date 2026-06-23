@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Smooth page background — matches reference soft green-white */
+body {
+  background-color: #F4F7F5;
+  font-family: var(--font-inter), 'Inter', sans-serif;
+}
+
+/* Scrollbar thin and styled */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 999px;
+}
+
+/* Number font — bold, clean like reference */
+.font-number {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+@keyframes auth-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.auth-apple input:-webkit-autofill,
+.auth-apple input:-webkit-autofill:hover,
+.auth-apple input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #fff inset;
+  -webkit-text-fill-color: #111827;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Branded auth background orbs */
+@keyframes auth-orb-drift-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, 20px) scale(1.05); }
+  66% { transform: translate(-20px, 35px) scale(0.97); }
+}
+
+@keyframes auth-orb-drift-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-40px, 25px) scale(1.08); }
+}
+
+@keyframes auth-orb-drift-c {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40% { transform: translate(25px, -30px) scale(1.04); }
+  80% { transform: translate(-15px, -15px) scale(0.96); }
+}
+
+.auth-orb-a { animation: auth-orb-drift-a 18s ease-in-out infinite; }
+.auth-orb-b { animation: auth-orb-drift-b 22s ease-in-out infinite; }
+.auth-orb-c { animation: auth-orb-drift-c 20s ease-in-out 3s infinite; }

@@ -1,0 +1,4 @@
+// Auth pages use their own full-screen layouts
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
+  return children;
+}
