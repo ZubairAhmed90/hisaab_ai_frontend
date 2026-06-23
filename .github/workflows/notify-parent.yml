@@ -1,0 +1,16 @@
+name: Notify parent repo
+
+on:
+  push:
+    branches: [main, master]
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger parent repo submodule sync
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.PARENT_REPO_TOKEN }}
+          repository: ZubairAhmed90/Hisaab-AI
+          event-type: sync-submodules
