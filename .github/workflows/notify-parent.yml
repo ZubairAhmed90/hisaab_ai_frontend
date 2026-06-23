@@ -1,5 +1,8 @@
 name: Notify parent repo
 
+# Optional instant sync. Without PARENT_REPO_TOKEN this step passes silently.
+# Parent always syncs every 15 min via scheduled workflow on Hisaab-AI.
+
 on:
   push:
     branches: [main, master]
@@ -8,25 +11,15 @@ jobs:
   dispatch:
     runs-on: ubuntu-latest
     steps:
-      - name: Verify PARENT_REPO_TOKEN secret
+      - name: Notify parent (optional)
         env:
           PAT: ${{ secrets.PARENT_REPO_TOKEN }}
         run: |
           if [ -z "$PAT" ]; then
-            echo "::error::Missing secret PARENT_REPO_TOKEN"
-            echo ""
-            echo "Fix:"
-            echo "  1. GitHub → Settings → Developer settings → Personal access tokens"
-            echo "  2. Create classic token with 'repo' scope"
-            echo "  3. This repo → Settings → Secrets and variables → Actions"
-            echo "  4. New secret: PARENT_REPO_TOKEN = your token"
-            exit 1
+            echo "PARENT_REPO_TOKEN not set — OK. Parent auto-syncs every 15 minutes."
+            exit 0
           fi
 
-      - name: Trigger parent repo submodule sync
-        env:
-          PAT: ${{ secrets.PARENT_REPO_TOKEN }}
-        run: |
           HTTP=$(curl -sS -o /tmp/dispatch-body.txt -w "%{http_code}" \
             -X POST \
             -H "Authorization: Bearer ${PAT}" \
@@ -40,11 +33,6 @@ jobs:
             exit 0
           fi
 
-          echo "::error::Parent dispatch failed (HTTP $HTTP)"
-          cat /tmp/dispatch-body.txt
-          echo ""
-          echo "Common fixes:"
-          echo "  - Token needs 'repo' scope (classic PAT)"
-          echo "  - Token owner must have write access to ZubairAhmed90/Hisaab-AI"
-          echo "  - Parent repo must have .github/workflows/sync-submodules.yml on main"
-          exit 1
+          echo "::warning::Dispatch HTTP $HTTP — parent will still sync on schedule"
+          cat /tmp/dispatch-body.txt || true
+          exit 0
