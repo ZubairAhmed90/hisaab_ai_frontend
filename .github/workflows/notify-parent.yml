@@ -8,9 +8,43 @@ jobs:
   dispatch:
     runs-on: ubuntu-latest
     steps:
+      - name: Verify PARENT_REPO_TOKEN secret
+        env:
+          PAT: ${{ secrets.PARENT_REPO_TOKEN }}
+        run: |
+          if [ -z "$PAT" ]; then
+            echo "::error::Missing secret PARENT_REPO_TOKEN"
+            echo ""
+            echo "Fix:"
+            echo "  1. GitHub → Settings → Developer settings → Personal access tokens"
+            echo "  2. Create classic token with 'repo' scope"
+            echo "  3. This repo → Settings → Secrets and variables → Actions"
+            echo "  4. New secret: PARENT_REPO_TOKEN = your token"
+            exit 1
+          fi
+
       - name: Trigger parent repo submodule sync
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          token: ${{ secrets.PARENT_REPO_TOKEN }}
-          repository: ZubairAhmed90/Hisaab-AI
-          event-type: sync-submodules
+        env:
+          PAT: ${{ secrets.PARENT_REPO_TOKEN }}
+        run: |
+          HTTP=$(curl -sS -o /tmp/dispatch-body.txt -w "%{http_code}" \
+            -X POST \
+            -H "Authorization: Bearer ${PAT}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/ZubairAhmed90/Hisaab-AI/dispatches \
+            -d '{"event_type":"sync-submodules","client_payload":{"source":"hisaab_ai_frontend"}}')
+
+          if [ "$HTTP" = "204" ]; then
+            echo "Parent repo dispatch OK (204)"
+            exit 0
+          fi
+
+          echo "::error::Parent dispatch failed (HTTP $HTTP)"
+          cat /tmp/dispatch-body.txt
+          echo ""
+          echo "Common fixes:"
+          echo "  - Token needs 'repo' scope (classic PAT)"
+          echo "  - Token owner must have write access to ZubairAhmed90/Hisaab-AI"
+          echo "  - Parent repo must have .github/workflows/sync-submodules.yml on main"
+          exit 1
