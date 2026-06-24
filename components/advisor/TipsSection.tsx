@@ -2,7 +2,6 @@
 
 import { Lightbulb, RefreshCw, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { useAiTips } from '@/lib/hooks';
 import { useAuthStore } from '@/lib/store';
 import { cn, getCategoryEmoji } from '@/lib/utils';

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 export function StepHeader({
@@ -36,16 +36,16 @@ export function StepHeader({
           <X size={20} />
         </Button>
       ) : backHref ? (
-        <Button
-          variant="ghost"
-          size="icon"
-          className={cn('rounded-xl', dark && 'text-white hover:bg-white/10')}
-          asChild
+        <Link
+          href={backHref}
+          className={cn(
+            buttonVariants({ variant: 'ghost', size: 'icon' }),
+            'rounded-xl',
+            dark && 'text-white hover:bg-white/10',
+          )}
         >
-          <Link href={backHref}>
-            <ArrowLeft size={20} />
-          </Link>
-        </Button>
+          <ArrowLeft size={20} />
+        </Link>
       ) : (
         <Button
           variant="ghost"

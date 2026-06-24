@@ -1,4 +1,4 @@
-import { Ban, Lock, Shield, ShieldAlert, User } from 'lucide-react';
+import { Ban, Lock, LucideIcon, Shield, ShieldAlert, User } from 'lucide-react';
 import { cn, formatPKR } from '@/lib/utils';
 
 type SetLimit = {
@@ -63,7 +63,7 @@ export function LimitStats({
 function StatsGrid({
   stats,
 }: {
-  stats: { label: string; value: string; icon: React.ComponentType<{ size?: number; strokeWidth?: number }>; color: string }[];
+  stats: { label: string; value: string; icon: LucideIcon; color: string }[];
 }) {
   return (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

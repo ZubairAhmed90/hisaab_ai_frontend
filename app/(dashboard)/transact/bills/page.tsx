@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Flame, Receipt, Smartphone, Wifi, Zap } from 'lucide-react';
+import { Flame, Smartphone, Wifi, Zap } from 'lucide-react';
 import { TransactNav, TransactPageHeader } from '@/components/transact/TransactShell';
 import { cn } from '@/lib/utils';
 import { BillerCategory, mockBillers } from '@/lib/mockData';

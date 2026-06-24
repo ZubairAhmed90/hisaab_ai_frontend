@@ -45,9 +45,12 @@ export function MirrorTabContent({ period }: { period: '1m' | '3m' | '6m' | '12m
 
   const inBudget = !data?.overspend || data.overspend <= 0;
   const investments = data?.investments || [];
+  type MirrorInvestment = { return_pct: number; current_value: number; ticker: string };
+  const fallback: MirrorInvestment = { return_pct: 0, current_value: 0, ticker: '' };
   const bestReturn = investments.reduce(
-    (best, item) => (item.return_pct > best.return_pct ? item : best),
-    investments[0] || { return_pct: 0, current_value: 0, ticker: '' },
+    (best: MirrorInvestment, item: MirrorInvestment) =>
+      item.return_pct > best.return_pct ? item : best,
+    investments[0] || fallback,
   );
 
   return (

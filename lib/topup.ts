@@ -1,5 +1,4 @@
 import { mockOperators, mockTopupContacts } from './mockData';
-import { getPackagesForOperator } from './topup.helpers';
 
 export type { TopupPackage } from './topup.helpers';
 export { getPackagesForOperator, mockTopupPackages } from './topup.helpers';
