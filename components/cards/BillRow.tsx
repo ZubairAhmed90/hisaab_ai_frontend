@@ -1,6 +1,6 @@
 import { Flame, LucideIcon, Smartphone, Wifi, Zap } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { cn, formatPKR } from '@/lib/utils';
 
 const ICONS: Record<string, LucideIcon> = {
@@ -29,11 +29,12 @@ export function BillRow({
         <p className={cn('text-xs font-medium', dueColor)}>Due in {bill.dueIn} days</p>
       </div>
       <p className="font-number shrink-0 font-bold text-gray-900">{formatPKR(bill.amount)}</p>
-      <Button size="sm" className="shrink-0 rounded-xl" asChild>
-        <Link href={`/transact/bills/details?billerName=${encodeURIComponent(bill.name)}&amount=${bill.amount}`}>
-          Pay
-        </Link>
-      </Button>
+      <Link
+        href={`/transact/bills/details?billerName=${encodeURIComponent(bill.name)}&amount=${bill.amount}`}
+        className={cn(buttonVariants({ size: 'sm' }), 'shrink-0 rounded-xl')}
+      >
+        Pay
+      </Link>
     </div>
   );
 }

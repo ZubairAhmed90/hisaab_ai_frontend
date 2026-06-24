@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { CheckCircle2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { TransactFlowCard } from '@/components/transact/TransactFlow';
+import { cn } from '@/lib/utils';
 
 export function SuccessPanel({
   title,
@@ -24,12 +25,15 @@ export function SuccessPanel({
         {amount ? <p className="font-number mt-2 text-3xl font-bold text-primary">{amount}</p> : null}
         <p className="mx-auto mt-3 max-w-sm text-sm text-muted">{subtitle}</p>
         <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:justify-center">
-          <Button className="rounded-xl" asChild>
-            <Link href="/dashboard">Back to Dashboard</Link>
-          </Button>
-          <Button variant="outline" className="rounded-xl" asChild>
-            <Link href="/transactions">View Transactions</Link>
-          </Button>
+          <Link href="/dashboard" className={cn(buttonVariants(), 'rounded-xl')}>
+            Back to Dashboard
+          </Link>
+          <Link
+            href="/transactions"
+            className={cn(buttonVariants({ variant: 'outline' }), 'rounded-xl')}
+          >
+            View Transactions
+          </Link>
         </div>
       </TransactFlowCard>
     </div>

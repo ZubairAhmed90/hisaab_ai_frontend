@@ -46,7 +46,7 @@ export const mockTopupPackages: Record<number, TopupPackage[]> = {
 export const mockTopupAmounts = [100, 200, 500, 1000, 1500, 2000];
 
 export function getPackagesForOperator(operatorId: number): TopupPackage[] {
-  return mockTopupPackages[operatorId] || mockTopupAmounts.map((amount, i) => ({
+  return mockTopupPackages[operatorId] || mockTopupAmounts.map((amount) => ({
     id: `default-${amount}`,
     label: `Rs ${amount}`,
     amount,

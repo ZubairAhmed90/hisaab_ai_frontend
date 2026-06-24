@@ -12,7 +12,7 @@ export type TranslationKey = string;
 
 const STORAGE_KEY = 'hisaab_lang';
 
-function lookup(dict: typeof en, key: string): string {
+function lookup(dict: typeof en | typeof ur, key: string): string {
   const value = key.split('.').reduce<unknown>((obj, part) => {
     if (obj && typeof obj === 'object' && part in obj) {
       return (obj as Record<string, unknown>)[part];
