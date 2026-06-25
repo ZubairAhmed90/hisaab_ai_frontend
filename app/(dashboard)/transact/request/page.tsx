@@ -12,12 +12,13 @@ import {
   TransactPageHeader,
 } from '@/components/transact/TransactShell';
 import { Input } from '@/components/ui/input';
-import { mockBeneficiaries } from '@/lib/mockData';
+import { useBeneficiaries } from '@/lib/hooks';
 
 export default function RequestPage() {
   const router = useRouter();
   const [query, setQuery] = useState('');
-  const filtered = mockBeneficiaries.filter((b) =>
+  const beneficiaries = useBeneficiaries();
+  const filtered = (beneficiaries.data || []).filter((b) =>
     b.name.toLowerCase().includes(query.toLowerCase()),
   );
 
@@ -45,15 +46,19 @@ export default function RequestPage() {
             <Users size={16} className="text-accent" />
             <p className="text-sm font-semibold text-gray-900">Send request to</p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3">
-            {filtered.map((b) => (
-              <BeneficiaryRow
-                key={b.id}
-                beneficiary={b}
-                onClick={() => router.push(`/transact/request/amount?contactId=${b.id}`)}
-              />
-            ))}
-          </div>
+          {beneficiaries.isLoading ? (
+            <p className="text-sm text-muted">Loading contacts…</p>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3">
+              {filtered.map((b) => (
+                <BeneficiaryRow
+                  key={b.id}
+                  beneficiary={b}
+                  onClick={() => router.push(`/transact/request/amount?contactId=${b.id}`)}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         <div className={`${TRANSACT_SIDE} rounded-3xl bg-card p-6 shadow-card`}>

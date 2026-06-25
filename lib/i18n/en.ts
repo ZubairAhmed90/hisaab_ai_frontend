@@ -295,7 +295,7 @@ export const en = {
   admin: {
     title: 'Admin Panel',
     subtitle: 'Manage users and credits',
-    creditWallet: 'Credit wallet',
+    creditWallet: 'Credit account',
     users: 'Users',
   },
   menu: {

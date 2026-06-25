@@ -275,3 +275,147 @@ export function useUpdateTransactionCategory() {
 }
 
 export * from './hooks-limits';
+
+function pickColor(seed: string) {
+  const colors = ['#1D9E75', '#D85A30', '#534AB7', '#185FA5', '#B45309', '#6D28D9'];
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+  return colors[Math.abs(hash) % colors.length];
+}
+
+function getInitials(name: string) {
+  return name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase() || '').join('');
+}
+
+export function useSendMoney() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      recipient_user_id?: number;
+      account_number?: string;
+      amount: number;
+      note?: string;
+    }) => api.post('/payments/send', data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+      qc.invalidateQueries({ queryKey: ['portfolio'] });
+      qc.invalidateQueries({ queryKey: ['beneficiaries'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['auth', 'me'] });
+    },
+  });
+}
+
+export function useBeneficiaries() {
+  return useQuery({
+    queryKey: ['beneficiaries'],
+    queryFn: async () => {
+      const res = await api.get('/beneficiaries');
+      return (res.data.data || []).map((b: {
+        id: number;
+        name: string;
+        bank?: string;
+        account?: string;
+        linked_user_id?: number;
+      }) => ({
+        id: b.id,
+        name: b.name,
+        initials: getInitials(b.name),
+        color: pickColor(b.name),
+        bank: b.bank || 'HisaabAI',
+        account: b.account || '',
+        linked_user_id: b.linked_user_id,
+      }));
+    },
+  });
+}
+
+export function useAddBeneficiary() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { name: string; bank: string; account: string; iban?: string }) =>
+      api.post('/beneficiaries', {
+        name: data.name,
+        bank: data.bank,
+        account_number: data.account,
+        iban: data.iban,
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['beneficiaries'] }),
+  });
+}
+
+export function useCreateMoneyRequest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      payer_user_id?: number;
+      account_number?: string;
+      amount: number;
+      reason?: string;
+    }) => api.post('/money-requests', data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['money-requests'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
+}
+
+export function useMoneyRequests(direction: 'all' | 'incoming' | 'outgoing' = 'all') {
+  return useQuery({
+    queryKey: ['money-requests', direction],
+    queryFn: async () => {
+      const res = await api.get('/money-requests', { params: { direction } });
+      return res.data.data || [];
+    },
+  });
+}
+
+export function useRespondMoneyRequest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, action }: { id: number; action: 'accept' | 'decline' | 'cancel' }) =>
+      api.post(`/money-requests/${id}/${action}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['money-requests'] });
+      qc.invalidateQueries({ queryKey: ['portfolio'] });
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['auth', 'me'] });
+    },
+  });
+}
+
+export function useNotifications(unreadOnly = false) {
+  return useQuery({
+    queryKey: ['notifications', unreadOnly],
+    queryFn: async () => {
+      const res = await api.get('/notifications', { params: unreadOnly ? { unread: '1' } : {} });
+      return res.data.data || [];
+    },
+  });
+}
+
+export function usePayBill() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      biller_code: string;
+      biller_name: string;
+      consumer_number: string;
+      amount: number;
+    }) => api.post('/bills/pay', data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+      qc.invalidateQueries({ queryKey: ['portfolio'] });
+      qc.invalidateQueries({ queryKey: ['bill-history'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
+}
+
+export function useBillHistory() {
+  return useQuery({
+    queryKey: ['bill-history'],
+    queryFn: async () => (await api.get('/bills/history')).data.data,
+  });
+}

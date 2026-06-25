@@ -297,7 +297,7 @@ export const ur: TranslationDict = {
   admin: {
     title: 'ایڈمن پینل',
     subtitle: 'صارفین اور کریڈٹ منظم کریں',
-    creditWallet: 'والیٹ کریڈٹ',
+    creditWallet: 'اکاؤنٹ کریڈٹ',
     users: 'صارفین',
   },
   menu: {

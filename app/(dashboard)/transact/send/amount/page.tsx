@@ -6,15 +6,18 @@ import { AmountKeypad } from '@/components/transact/AmountKeypad';
 import { TransactFlowCard, TransactFlowHeader } from '@/components/transact/TransactFlow';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { mockBeneficiaries } from '@/lib/mockData';
+import { useBeneficiaries } from '@/lib/hooks';
 
 function SendAmountContent() {
   const router = useRouter();
   const params = useSearchParams();
+  const beneficiaries = useBeneficiaries();
   const beneficiaryId = params.get('beneficiaryId') || '';
   const merchantName = params.get('merchantName') || '';
   const prefilled = params.get('amount') || '';
-  const beneficiary = mockBeneficiaries.find((b) => String(b.id) === beneficiaryId);
+  const qrUid = params.get('qrUid') || '';
+  const qrAccount = params.get('qrAccount') || '';
+  const beneficiary = (beneficiaries.data || []).find((b) => String(b.id) === beneficiaryId);
   const [amount, setAmount] = useState(prefilled);
   const [note, setNote] = useState('');
   const valid = amount.length > 0 && amount !== '0' && amount !== '0.';
@@ -74,7 +77,15 @@ function SendAmountContent() {
             className="mt-6 h-12 w-full rounded-xl text-base"
             disabled={!valid}
             onClick={() => {
-              const q = new URLSearchParams({ beneficiaryId, merchantName, amount, note });
+              const q = new URLSearchParams({
+                beneficiaryId,
+                merchantName,
+                amount,
+                note,
+                qrUid,
+                qrAccount,
+                linkedUserId: beneficiary?.linked_user_id ? String(beneficiary.linked_user_id) : '',
+              });
               router.push(`/transact/send/confirm?${q.toString()}`);
             }}
           >

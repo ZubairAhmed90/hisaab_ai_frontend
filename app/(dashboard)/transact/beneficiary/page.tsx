@@ -8,21 +8,30 @@ import { TransactFlowCard, TransactFlowHeader } from '@/components/transact/Tran
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { BANKS } from '@/lib/mockData';
+import { useAddBeneficiary } from '@/lib/hooks';
+
+const BANKS = ['HisaabAI', 'UBL', 'HBL', 'Meezan', 'Alfalah', 'MCB', 'Other'];
 
 export default function AddBeneficiaryPage() {
   const router = useRouter();
+  const addBeneficiary = useAddBeneficiary();
   const [name, setName] = useState('');
   const [bank, setBank] = useState(BANKS[0]);
   const [account, setAccount] = useState('');
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name || account.length < 4) {
       toast.error('Please fill all fields');
       return;
     }
-    toast.success(`${name} added as beneficiary`);
-    router.push('/transact/send');
+    try {
+      await addBeneficiary.mutateAsync({ name, bank, account });
+      toast.success(`${name} added as beneficiary`);
+      router.push('/transact/send');
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      toast.error(typeof msg === 'string' ? msg : 'Could not save beneficiary');
+    }
   };
 
   return (
@@ -38,7 +47,7 @@ export default function AddBeneficiaryPage() {
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10">
               <UserPlus size={22} className="text-accent" />
             </div>
-            <p className="text-sm text-muted">Save a contact for faster transfers</p>
+            <p className="text-sm text-muted">Save a contact for faster transfers. Use HisaabAI + account ID for instant P2P.</p>
           </div>
           <div className="space-y-5">
             <div className="space-y-2">
@@ -58,14 +67,14 @@ export default function AddBeneficiaryPage() {
               </select>
             </div>
             <div className="space-y-2">
-              <Label>Account Number</Label>
-              <Input value={account} onChange={(e) => setAccount(e.target.value)} className="rounded-xl" />
+              <Label>Account Number or HisaabAI ID</Label>
+              <Input value={account} onChange={(e) => setAccount(e.target.value)} className="rounded-xl" placeholder="e.g. HA-000012 or account number" />
             </div>
             <div className="flex gap-3 pt-2">
               <Button variant="outline" className="flex-1 rounded-xl" onClick={() => router.push('/transact/send')}>
                 Cancel
               </Button>
-              <Button className="flex-1 rounded-xl" onClick={handleSave}>
+              <Button className="flex-1 rounded-xl" onClick={handleSave} disabled={addBeneficiary.isPending}>
                 Save beneficiary
               </Button>
             </div>

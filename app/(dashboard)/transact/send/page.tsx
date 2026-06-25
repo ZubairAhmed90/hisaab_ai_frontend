@@ -13,19 +13,22 @@ import {
   TransactPageHeader,
 } from '@/components/transact/TransactShell';
 import { Input } from '@/components/ui/input';
-import { mockBeneficiaries } from '@/lib/mockData';
+import { useBeneficiaries } from '@/lib/hooks';
 
 const TIPS = [
-  'Transfers to local banks are free and instant',
+  'Transfers between HisaabAI users are free and instant',
   'Scan a friend\'s QR from Receive QR tab to pay them',
-  'Daily limit resets at midnight PKT',
+  'Save beneficiaries with their HisaabAI account ID',
 ];
 
 export default function SendPage() {
   const router = useRouter();
   const [query, setQuery] = useState('');
-  const filtered = mockBeneficiaries.filter((b) =>
-    b.name.toLowerCase().includes(query.toLowerCase()),
+  const beneficiaries = useBeneficiaries();
+  const list = beneficiaries.data || [];
+  const filtered = list.filter((b) =>
+    b.name.toLowerCase().includes(query.toLowerCase()) ||
+    b.bank.toLowerCase().includes(query.toLowerCase()),
   );
 
   return (
@@ -60,16 +63,20 @@ export default function SendPage() {
               </span>
             </div>
 
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {filtered.map((b) => (
-                <BeneficiaryRow
-                  key={b.id}
-                  beneficiary={b}
-                  onClick={() => router.push(`/transact/send/amount?beneficiaryId=${b.id}`)}
-                />
-              ))}
-            </div>
-            {filtered.length === 0 ? (
+            {beneficiaries.isLoading ? (
+              <p className="py-8 text-center text-sm text-muted">Loading beneficiaries…</p>
+            ) : (
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {filtered.map((b) => (
+                  <BeneficiaryRow
+                    key={b.id}
+                    beneficiary={b}
+                    onClick={() => router.push(`/transact/send/amount?beneficiaryId=${b.id}`)}
+                  />
+                ))}
+              </div>
+            )}
+            {!beneficiaries.isLoading && filtered.length === 0 ? (
               <p className="py-8 text-center text-sm text-muted">No contacts match your search</p>
             ) : null}
           </div>
@@ -99,7 +106,7 @@ export default function SendPage() {
               </div>
               <div>
                 <p className="text-xs text-muted">Saved contacts</p>
-                <p className="font-bold text-gray-900">{mockBeneficiaries.length}</p>
+                <p className="font-bold text-gray-900">{list.length}</p>
               </div>
             </div>
           </div>

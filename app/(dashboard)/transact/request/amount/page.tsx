@@ -7,21 +7,40 @@ import { ConfirmButton } from '@/components/transact/ConfirmButton';
 import { StepHeader } from '@/components/transact/StepHeader';
 import { Input } from '@/components/ui/input';
 import { formatPKR } from '@/lib/utils';
-import { mockBeneficiaries } from '@/lib/mockData';
+import { useBeneficiaries, useCreateMoneyRequest } from '@/lib/hooks';
+import { toast } from 'sonner';
 
 function RequestAmountContent() {
   const router = useRouter();
   const params = useSearchParams();
+  const createRequest = useCreateMoneyRequest();
+  const beneficiaries = useBeneficiaries();
   const contactId = params.get('contactId') || '';
-  const contact = mockBeneficiaries.find((b) => String(b.id) === contactId);
+  const contact = (beneficiaries.data || []).find((b) => String(b.id) === contactId);
   const [amount, setAmount] = useState('');
   const [reason, setReason] = useState('');
   const valid = amount.length > 0 && amount !== '0';
 
   const handleConfirm = async () => {
-    router.push(
-      `/transact/request/success?amount=${amount}&from=${encodeURIComponent(contact?.name || 'Contact')}`,
-    );
+    const payerUserId = contact?.linked_user_id;
+    const accountNumber = contact?.account || undefined;
+    if (!payerUserId && !accountNumber) {
+      toast.error('Contact needs a HisaabAI account ID');
+      return;
+    }
+    try {
+      await createRequest.mutateAsync({
+        ...(payerUserId ? { payer_user_id: payerUserId } : { account_number: accountNumber }),
+        amount: Number(amount),
+        reason: reason.trim() || undefined,
+      });
+      router.push(
+        `/transact/request/success?amount=${amount}&from=${encodeURIComponent(contact?.name || 'Contact')}`,
+      );
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      toast.error(typeof msg === 'string' ? msg : 'Request failed');
+    }
   };
 
   return (
