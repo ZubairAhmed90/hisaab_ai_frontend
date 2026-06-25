@@ -60,7 +60,7 @@ export function WalletTransferPanel({ onSuccess }: { onSuccess?: () => void }) {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="rounded-2xl border border-border/60 bg-lime/25 p-5">
           <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-800">
-            <Wallet size={16} /> {t('transact.spendingWallet')}
+            <Wallet size={16} /> {t('transact.stocksWallet')}
           </div>
           <p className="font-number text-2xl font-bold text-gray-900">{formatPKR(wallet)}</p>
           <p className="mt-1 text-xs text-muted">{t('transact.walletDesc')}</p>

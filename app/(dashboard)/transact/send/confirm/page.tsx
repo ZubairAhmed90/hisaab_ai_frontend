@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ConfirmButton } from '@/components/transact/ConfirmButton';
 import { TransactFlowCard, TransactFlowHeader } from '@/components/transact/TransactFlow';

@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { TopupContactPicker } from '@/components/transact/TopupContactPicker';
 import { TopupPackageGrid } from '@/components/transact/TopupPackageGrid';
-import { mockOperators } from '@/lib/mockData';
+import { OPERATORS } from '@/lib/catalog';
 import {
   detectOperatorFromPhone,
   fetchPhoneDetails,
@@ -25,13 +25,13 @@ export default function TopupPage() {
   const [phone, setPhone] = useState('');
   const [contactName, setContactName] = useState('');
   const [selectedContactId, setSelectedContactId] = useState<number | null>(null);
-  const [operatorId, setOperatorId] = useState<number>(mockOperators[0].id);
+  const [operatorId, setOperatorId] = useState<number>(OPERATORS[0].id);
   const [lookup, setLookup] = useState<PhoneLookupResult | null>(null);
   const [lookupLoading, setLookupLoading] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<TopupPackage | null>(null);
 
   const packages = getPackagesForOperator(operatorId);
-  const operator = mockOperators.find((o) => o.id === operatorId);
+  const operator = OPERATORS.find((o) => o.id === operatorId);
   const canContinue = phone.length === 11 && operatorId > 0;
 
   const goToAmount = useCallback(

@@ -13,11 +13,30 @@ const ICONS: Record<string, LucideIcon> = {
 export function BillRow({
   bill,
 }: {
-  bill: { id: number; name: string; dueIn: number; amount: number; icon: string };
+  bill: {
+    id: number;
+    name: string;
+    amount: number;
+    icon: string;
+    dueIn?: number;
+    paidAt?: string;
+    consumerNumber?: string;
+  };
 }) {
   const Icon = ICONS[bill.icon] || Zap;
+  const isPaid = bill.paidAt != null;
   const dueColor =
-    bill.dueIn < 3 ? 'text-danger' : bill.dueIn < 7 ? 'text-warning' : 'text-muted';
+    !isPaid && bill.dueIn != null
+      ? bill.dueIn < 3
+        ? 'text-danger'
+        : bill.dueIn < 7
+          ? 'text-warning'
+          : 'text-muted'
+      : 'text-muted';
+
+  const detailsHref = bill.consumerNumber
+    ? `/transact/bills/details?billerName=${encodeURIComponent(bill.name)}&amount=${bill.amount}`
+    : `/transact/bills/details?billerName=${encodeURIComponent(bill.name)}`;
 
   return (
     <div className="flex items-center gap-4 rounded-2xl bg-card p-4 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover">
@@ -26,15 +45,16 @@ export function BillRow({
       </div>
       <div className="min-w-0 flex-1">
         <p className="font-semibold text-gray-900">{bill.name}</p>
-        <p className={cn('text-xs font-medium', dueColor)}>Due in {bill.dueIn} days</p>
+        <p className={cn('text-xs font-medium', dueColor)}>
+          {isPaid ? `Paid ${bill.paidAt}` : bill.dueIn != null ? `Due in ${bill.dueIn} days` : 'Bill payment'}
+        </p>
       </div>
       <p className="font-number shrink-0 font-bold text-gray-900">{formatPKR(bill.amount)}</p>
-      <Link
-        href={`/transact/bills/details?billerName=${encodeURIComponent(bill.name)}&amount=${bill.amount}`}
-        className={cn(buttonVariants({ size: 'sm' }), 'shrink-0 rounded-xl')}
-      >
-        Pay
-      </Link>
+      {!isPaid ? (
+        <Link href={detailsHref} className={cn(buttonVariants({ size: 'sm' }), 'shrink-0 rounded-xl')}>
+          Pay
+        </Link>
+      ) : null}
     </div>
   );
 }

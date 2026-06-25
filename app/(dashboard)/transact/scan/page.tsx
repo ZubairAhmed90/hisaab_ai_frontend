@@ -11,7 +11,6 @@ import {
   TransactPageHeader,
 } from '@/components/transact/TransactShell';
 import { parsePayQr, qrToSendParams } from '@/lib/qr';
-import { mockScannedMerchant } from '@/lib/mockData';
 
 const QrScanner = dynamic(
   () => import('@/components/transact/QrScanner').then((m) => m.QrScanner),
@@ -36,10 +35,7 @@ export default function ScanQrPage() {
       router.push(`/transact/send/amount?${new URLSearchParams(params).toString()}`);
       return;
     }
-    toast.info(`Demo pay — ${mockScannedMerchant.name}`);
-    router.push(
-      `/transact/send/amount?merchantName=${encodeURIComponent(mockScannedMerchant.name)}&amount=${mockScannedMerchant.suggestedAmount}`,
-    );
+    toast.error('Invalid QR code. Use a HisaabAI receive QR or pay from Send Money.');
   };
 
   return (

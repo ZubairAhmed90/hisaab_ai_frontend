@@ -2,8 +2,10 @@
 
 import { Loader2, Phone, Search, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { mockOperators } from '@/lib/mockData';
-import { mockTopupContacts, PhoneLookupResult } from '@/lib/topup';
+import { OPERATORS } from '@/lib/catalog';
+import type { TopupContact } from '@/lib/topup-contacts';
+import { PhoneLookupResult } from '@/lib/topup';
+import { useTopupContacts } from '@/lib/hooks';
 
 type Props = {
   mode: 'contacts' | 'manual';
@@ -11,7 +13,7 @@ type Props = {
   phone: string;
   onPhoneChange: (phone: string) => void;
   selectedContactId: number | null;
-  onSelectContact: (contact: (typeof mockTopupContacts)[0]) => void;
+  onSelectContact: (contact: TopupContact) => void;
   lookup: PhoneLookupResult | null;
   lookupLoading: boolean;
   onFetch: () => void;
@@ -32,6 +34,8 @@ export function TopupContactPicker({
   operatorId,
   onOperatorChange,
 }: Props) {
+  const { data: contacts = [], isLoading } = useTopupContacts();
+
   return (
     <div className="space-y-4">
       <div className="flex gap-2 rounded-xl bg-surface p-1">
@@ -58,42 +62,50 @@ export function TopupContactPicker({
       </div>
 
       {mode === 'contacts' ? (
-        <div className="grid gap-2 sm:grid-cols-2">
-          {mockTopupContacts.map((c) => {
-            const op = mockOperators.find((o) => o.id === c.operatorId);
-            const selected = selectedContactId === c.id;
-            return (
-              <button
-                key={c.id}
-                type="button"
-                onClick={() => onSelectContact(c)}
-                className={cn(
-                  'flex items-center gap-3 rounded-2xl border p-4 text-left transition-all',
-                  selected
-                    ? 'border-primary bg-primary/5 shadow-sm'
-                    : 'border-border/50 bg-surface/30 hover:border-primary/25',
-                )}
-              >
-                <div
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white"
-                  style={{ backgroundColor: c.color }}
+        isLoading ? (
+          <p className="text-sm text-muted">Loading saved numbers…</p>
+        ) : contacts.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border bg-surface/50 p-6 text-center text-sm text-muted">
+            No saved numbers yet. Switch to &quot;Enter number&quot; — we&apos;ll remember it after your first top-up.
+          </div>
+        ) : (
+          <div className="grid gap-2 sm:grid-cols-2">
+            {contacts.map((c) => {
+              const op = OPERATORS.find((o) => o.id === c.operatorId);
+              const selected = selectedContactId === c.id;
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => onSelectContact(c)}
+                  className={cn(
+                    'flex items-center gap-3 rounded-2xl border p-4 text-left transition-all',
+                    selected
+                      ? 'border-primary bg-primary/5 shadow-sm'
+                      : 'border-border/50 bg-surface/30 hover:border-primary/25',
+                  )}
                 >
-                  {c.initials}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-gray-900">{c.name}</p>
-                  <p className="text-xs text-muted">{c.phone}</p>
-                </div>
-                <span
-                  className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold text-white"
-                  style={{ backgroundColor: op?.color }}
-                >
-                  {op?.name}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+                  <div
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white"
+                    style={{ backgroundColor: c.color }}
+                  >
+                    {c.initials}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-gray-900">{c.name}</p>
+                    <p className="text-xs text-muted">{c.phone}</p>
+                  </div>
+                  <span
+                    className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold text-white"
+                    style={{ backgroundColor: op?.color }}
+                  >
+                    {op?.name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )
       ) : (
         <div className="space-y-3">
           <div className="flex gap-2">
@@ -129,7 +141,7 @@ export function TopupContactPicker({
       <div>
         <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">Network</p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {mockOperators.map((op) => (
+          {OPERATORS.map((op) => (
             <button
               key={op.id}
               type="button"

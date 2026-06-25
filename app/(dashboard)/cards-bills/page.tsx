@@ -1,10 +1,13 @@
 'use client';
 
 import { CreditCard, Receipt, Wallet } from 'lucide-react';
+import Link from 'next/link';
 import { CardVisual } from '@/components/cards/CardVisual';
 import { BillRow } from '@/components/cards/BillRow';
 import { QuickPayGrid } from '@/components/cards/QuickPayGrid';
-import { mockBills, mockCards } from '@/lib/mockData';
+import SkeletonCard from '@/components/shared/SkeletonCard';
+import { useBillHistory } from '@/lib/hooks';
+import { mockCards } from '@/lib/mockData';
 import { formatPKR } from '@/lib/utils';
 import { useAuthStore } from '@/lib/store';
 import { useTranslation } from '@/lib/i18n';
@@ -12,9 +15,9 @@ import { useTranslation } from '@/lib/i18n';
 export default function CardsBillsPage() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
+  const { data: bills = [], isLoading } = useBillHistory();
   const holder = user?.name || 'Card Holder';
-  const totalDue = mockBills.reduce((sum, b) => sum + b.amount, 0);
-  const dueSoon = mockBills.filter((b) => b.dueIn <= 7).length;
+  const totalPaid = bills.reduce((sum, b) => sum + b.amount, 0);
 
   return (
     <div className="space-y-6">
@@ -30,7 +33,7 @@ export default function CardsBillsPage() {
               <CreditCard size={18} className="text-primary" />
             </div>
             <div>
-              <p className="text-xs text-muted">Active Cards</p>
+              <p className="text-xs text-muted">Demo cards</p>
               <p className="font-number text-xl font-bold text-gray-900">{mockCards.length}</p>
             </div>
           </div>
@@ -41,8 +44,8 @@ export default function CardsBillsPage() {
               <Receipt size={18} className="text-warning" />
             </div>
             <div>
-              <p className="text-xs text-muted">Due This Week</p>
-              <p className="font-number text-xl font-bold text-gray-900">{dueSoon}</p>
+              <p className="text-xs text-muted">Bill payments</p>
+              <p className="font-number text-xl font-bold text-gray-900">{bills.length}</p>
             </div>
           </div>
         </div>
@@ -52,8 +55,8 @@ export default function CardsBillsPage() {
               <Wallet size={18} className="text-gray-800" />
             </div>
             <div>
-              <p className="text-xs text-muted">Total Due</p>
-              <p className="font-number text-xl font-bold text-gray-900">{formatPKR(totalDue)}</p>
+              <p className="text-xs text-muted">Total paid</p>
+              <p className="font-number text-xl font-bold text-gray-900">{formatPKR(totalPaid)}</p>
             </div>
           </div>
         </div>
@@ -69,22 +72,33 @@ export default function CardsBillsPage() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-semibold text-gray-900">Quick Pay</h2>
+        <h2 className="mb-3 text-sm font-semibold text-gray-900">{t('cards.quickPay')}</h2>
         <QuickPayGrid />
       </section>
 
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-900">Upcoming Bills</h2>
-          <span className="rounded-full bg-surface px-2.5 py-0.5 text-xs font-medium text-muted">
-            {mockBills.length} bills
-          </span>
+          <h2 className="text-sm font-semibold text-gray-900">Recent bill payments</h2>
+          <Link href="/transact/bills" className="text-xs font-semibold text-primary hover:underline">
+            Pay a bill
+          </Link>
         </div>
-        <div className="space-y-3">
-          {mockBills.map((bill) => (
-            <BillRow key={bill.id} bill={bill} />
-          ))}
-        </div>
+        {isLoading ? (
+          <SkeletonCard className="h-24 w-full" />
+        ) : bills.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-border bg-surface/50 p-8 text-center text-sm text-muted">
+            No bill payments yet.{' '}
+            <Link href="/transact/bills" className="font-semibold text-primary hover:underline">
+              Pay your first bill
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {bills.map((bill) => (
+              <BillRow key={bill.id} bill={bill} />
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

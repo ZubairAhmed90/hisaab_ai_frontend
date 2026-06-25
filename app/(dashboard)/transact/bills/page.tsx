@@ -4,8 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Flame, Smartphone, Wifi, Zap } from 'lucide-react';
 import { TransactNav, TransactPageHeader } from '@/components/transact/TransactShell';
+import { BILLERS, type BillerCategory } from '@/lib/catalog';
 import { cn } from '@/lib/utils';
-import { BillerCategory, mockBillers } from '@/lib/mockData';
 
 const CATEGORIES: { key: BillerCategory; label: string; icon: typeof Zap; color: string }[] = [
   { key: 'electricity', label: 'Electricity', icon: Zap, color: 'bg-amber-500/15 text-amber-600' },
@@ -17,7 +17,7 @@ const CATEGORIES: { key: BillerCategory; label: string; icon: typeof Zap; color:
 export default function BillsPage() {
   const router = useRouter();
   const [category, setCategory] = useState<BillerCategory>('electricity');
-  const billers = mockBillers[category];
+  const billers = BILLERS[category];
   const catMeta = CATEGORIES.find((c) => c.key === category)!;
 
   return (

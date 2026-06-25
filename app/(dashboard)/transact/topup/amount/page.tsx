@@ -2,18 +2,22 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { AmountKeypad } from '@/components/transact/AmountKeypad';
 import { ConfirmButton } from '@/components/transact/ConfirmButton';
 import { StepHeader } from '@/components/transact/StepHeader';
 import { TopupPackageGrid } from '@/components/transact/TopupPackageGrid';
+import { OPERATORS } from '@/lib/catalog';
 import { cn, formatPKR } from '@/lib/utils';
-import { mockOperators } from '@/lib/mockData';
 import { getPackagesForOperator } from '@/lib/topup';
 import type { TopupPackage } from '@/lib/topup.helpers';
+import { saveTopupContact } from '@/lib/topup-contacts';
 import { useRecordPayment } from '@/lib/hooks';
 
 function TopupAmountContent() {
   const router = useRouter();
+  const qc = useQueryClient();
   const recordPayment = useRecordPayment();
   const params = useSearchParams();
   const operatorId = Number(params.get('operatorId') || '1');
@@ -23,7 +27,7 @@ function TopupAmountContent() {
   const initialPackageId = params.get('packageId') || '';
   const initialPackageLabel = params.get('packageLabel') || '';
 
-  const operator = mockOperators.find((o) => o.id === operatorId);
+  const operator = OPERATORS.find((o) => o.id === operatorId);
   const packages = getPackagesForOperator(operatorId);
 
   const [amount, setAmount] = useState(initialAmount);
@@ -54,16 +58,29 @@ function TopupAmountContent() {
       ? `${operator?.name || 'Mobile'} ${label} — ${recipient}`
       : `${operator?.name || 'Mobile'} top-up — ${recipient}`;
 
-    await recordPayment.mutateAsync({
-      amount: Number(amount),
-      description: desc,
-      category: 'utilities',
-      merchant: operator?.name,
-      source: 'topup',
-    });
-    router.push(
-      `/transact/topup/success?amount=${amount}&phone=${phone}&operator=${encodeURIComponent(operator?.name || '')}&package=${encodeURIComponent(label || '')}`,
-    );
+    try {
+      await recordPayment.mutateAsync({
+        amount: Number(amount),
+        description: desc,
+        category: 'utilities',
+        merchant: operator?.name,
+        source: 'topup',
+      });
+      if (phone) {
+        saveTopupContact({
+          name: contactName || phone,
+          phone,
+          operatorId,
+        });
+        qc.invalidateQueries({ queryKey: ['topup-contacts'] });
+      }
+      router.push(
+        `/transact/topup/success?amount=${amount}&phone=${phone}&operator=${encodeURIComponent(operator?.name || '')}&package=${encodeURIComponent(label || '')}`,
+      );
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      toast.error(typeof msg === 'string' ? msg : 'Top-up failed. Check your account balance.');
+    }
   };
 
   return (

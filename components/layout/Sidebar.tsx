@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   BarChart3,
+  Bell,
   Bot,
   CreditCard,
   Gift,
@@ -36,6 +37,7 @@ const NAV: { href: string; icon: typeof LayoutDashboard; labelKey: TranslationKe
   { href: '/partner', icon: Users, labelKey: 'nav.partner' },
   { href: '/offers', icon: Gift, labelKey: 'nav.offers' },
   { href: '/reports', icon: BarChart3, labelKey: 'nav.reports' },
+  { href: '/notifications', icon: Bell, labelKey: 'nav.notifications' },
   { href: '/settings', icon: Settings, labelKey: 'nav.settings' },
 ];
 

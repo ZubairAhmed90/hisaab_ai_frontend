@@ -45,7 +45,7 @@ export default function InvestPage() {
         toast.success(`Bought ${quantity} ${selected}`);
       } else {
         await sellStock.mutateAsync({ ticker: selected, quantity });
-        toast.success(`Sold ${quantity} ${selected} — Rs ${total.toLocaleString()} added to wallet`);
+        toast.success(`Sold ${quantity} ${selected} — ${formatPKR(total)} added to stocks wallet`);
       }
       setQty('1');
     } catch (e: unknown) {
@@ -59,8 +59,8 @@ export default function InvestPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">{t('invest.title')}</h1>
         <p className="mt-1 text-sm text-muted">
-          {t('invest.wallet')}: {formatPKR(portfolio.data?.wallet_balance || 0)} · {t('dashboard.accountBalance')}{' '}
-          {portfolio.data?.account_number}
+          {t('invest.wallet')}: {formatPKR(portfolio.data?.wallet_balance || 0)} · {t('invest.account')}:{' '}
+          {formatPKR(portfolio.data?.account_balance || 0)}
         </p>
       </div>
 
@@ -132,7 +132,7 @@ export default function InvestPage() {
                 onClick={execute}
                 disabled={buyStock.isPending || sellStock.isPending || (mode === 'sell' && owned < quantity)}
               >
-                {mode === 'buy' ? 'Buy shares' : 'Sell & withdraw to wallet'}
+                {mode === 'buy' ? t('invest.buy') : t('invest.sellToWallet')}
               </Button>
             </>
           ) : (

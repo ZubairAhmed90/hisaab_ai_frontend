@@ -238,6 +238,7 @@ export function useMe() {
   return useQuery({
     queryKey: ['auth', 'me'],
     queryFn: async () => (await api.get('/auth/me')).data.data,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -306,10 +307,20 @@ export function useSendMoney() {
   });
 }
 
+export type BeneficiaryItem = {
+  id: number;
+  name: string;
+  initials: string;
+  color: string;
+  bank: string;
+  account: string;
+  linked_user_id?: number;
+};
+
 export function useBeneficiaries() {
   return useQuery({
     queryKey: ['beneficiaries'],
-    queryFn: async () => {
+    queryFn: async (): Promise<BeneficiaryItem[]> => {
       const res = await api.get('/beneficiaries');
       return (res.data.data || []).map((b: {
         id: number;
@@ -409,13 +420,65 @@ export function usePayBill() {
       qc.invalidateQueries({ queryKey: ['portfolio'] });
       qc.invalidateQueries({ queryKey: ['bill-history'] });
       qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['auth', 'me'] });
     },
   });
 }
 
+export type BillHistoryItem = {
+  id: number;
+  name: string;
+  amount: number;
+  icon: string;
+  paidAt: string;
+  consumerNumber: string;
+};
+
 export function useBillHistory() {
   return useQuery({
     queryKey: ['bill-history'],
-    queryFn: async () => (await api.get('/bills/history')).data.data,
+    queryFn: async (): Promise<BillHistoryItem[]> => {
+      const res = await api.get('/bills/history', { params: { limit: 20 } });
+      return (res.data.data || []).map((b: {
+        id: number;
+        biller_name: string;
+        consumer_number: string;
+        amount: number | string;
+        paid_at: string;
+      }) => ({
+        id: b.id,
+        name: b.biller_name,
+        amount: Math.abs(Number(b.amount)),
+        icon: b.biller_name.toLowerCase().includes('mobile') || b.biller_name.toLowerCase().includes('jazz')
+          ? 'smartphone'
+          : b.biller_name.toLowerCase().includes('internet') || b.biller_name.toLowerCase().includes('ptcl')
+            ? 'wifi'
+            : b.biller_name.toLowerCase().includes('gas') || b.biller_name.toLowerCase().includes('sngpl')
+              ? 'flame'
+              : 'zap',
+        paidAt: new Date(b.paid_at).toLocaleDateString(),
+        consumerNumber: b.consumer_number,
+      }));
+    },
+  });
+}
+
+export function useMarkNotificationRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api.patch(`/notifications/${id}/read`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
+}
+
+export function useTopupContacts() {
+  return useQuery({
+    queryKey: ['topup-contacts'],
+    queryFn: async () => {
+      const { loadTopupContacts } = await import('./topup-contacts');
+      return loadTopupContacts();
+    },
   });
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import {
   Bell,
   Globe,
@@ -87,10 +88,14 @@ export default function SettingsPage() {
                 <Shield size={16} className="text-success" />
                 <span className="font-medium text-gray-800">{t('settingsExt.verifiedAccount')}</span>
               </div>
-              <div className="flex items-center gap-3 rounded-xl bg-surface px-3 py-2.5 text-sm text-muted">
+              <Link
+                href="/notifications"
+                className="flex items-center gap-3 rounded-xl bg-surface px-3 py-2.5 text-sm text-gray-800 transition-colors hover:bg-primary/5"
+              >
                 <Bell size={16} className="text-primary" />
-                <span>{t('settingsExt.notificationsSoon')}</span>
-              </div>
+                <span className="font-medium">{t('settingsExt.notifications')}</span>
+              </Link>
+              <p className="px-3 text-xs text-muted">{t('settingsExt.notificationsHint')}</p>
             </div>
           </div>
 
