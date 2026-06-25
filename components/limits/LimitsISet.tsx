@@ -83,8 +83,8 @@ export function LimitsISet() {
                 monthly_limit: number;
                 alert_at_percent: number;
                 is_hard_limit: boolean;
-                target_user: { name: string; id: number };
-                owner_id: number;
+                target_name?: string;
+                owner_id?: number;
                 target_user_id: number;
               }) => (
                 <LimitSetCard key={limit.id} limit={limit} currentUserId={userId} />

@@ -39,7 +39,7 @@ export function MirrorCard({
             {meta.icon}
           </span>
           <div>
-            <p className="font-semibold text-gray-900">{ticker}</p>
+            <p className="font-semibold text-gray-900">{ticker || meta.label}</p>
             <p className="text-xs capitalize text-muted">{meta.label}</p>
           </div>
         </div>

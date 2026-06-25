@@ -73,7 +73,12 @@ export function useAddTransaction() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: object) => api.post('/transactions', data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['transactions'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+      qc.invalidateQueries({ queryKey: ['portfolio'] });
+      qc.invalidateQueries({ queryKey: ['budgets'] });
+      qc.invalidateQueries({ queryKey: ['auth', 'me'] });
+    },
   });
 }
 

@@ -45,7 +45,7 @@ export function MirrorTabContent({ period }: { period: '1m' | '3m' | '6m' | '12m
 
   const inBudget = !data?.overspend || data.overspend <= 0;
   const investments = data?.investments || [];
-  type MirrorInvestment = { return_pct: number; current_value: number; ticker: string };
+  type MirrorInvestment = { asset: string; return_pct: number; current_value: number; ticker?: string };
   const fallback: MirrorInvestment = { return_pct: 0, current_value: 0, ticker: '' };
   const bestReturn = investments.reduce(
     (best: MirrorInvestment, item: MirrorInvestment) =>
@@ -84,10 +84,13 @@ export function MirrorTabContent({ period }: { period: '1m' | '3m' | '6m' | '12m
                   <p className="font-number mt-1 text-3xl font-bold text-danger">
                     {formatPKR(data!.overspend)}
                   </p>
-                  {bestReturn && (
+                  {bestReturn && bestReturn.current_value > 0 && (
                     <p className="mt-2 text-sm text-gray-600">
-                      If invested in <span className="font-semibold">{bestReturn.ticker}</span>, it
-                      could be{' '}
+                      If invested in{' '}
+                      <span className="font-semibold">
+                        {bestReturn.ticker || bestReturn.asset}
+                      </span>
+                      , it could be{' '}
                       <span className="font-semibold text-success">
                         {formatPKR(bestReturn.current_value)}
                       </span>{' '}

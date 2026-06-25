@@ -30,7 +30,8 @@ export function OfferCard({
     id: number;
     title: string;
     description?: string;
-    company: string;
+    company?: string;
+    company_name?: string;
     valid_until: string;
     target_category?: string;
     score?: number;
@@ -41,6 +42,7 @@ export function OfferCard({
   const [copied, setCopied] = useState(false);
   const redeem = useRedeemOffer();
 
+  const brand = offer.company || offer.company_name || 'Offer';
   const category = offer.target_category || 'other';
   const gradient = CATEGORY_GRADIENTS[category] || CATEGORY_GRADIENTS.other;
   const daysLeft = daysUntil(offer.valid_until);
@@ -79,7 +81,7 @@ export function OfferCard({
               {getCategoryEmoji(category)}
             </span>
             <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-primary">{offer.company}</p>
+              <p className="text-xs font-bold uppercase tracking-wide text-primary">{brand}</p>
               {offer.score != null && offer.score > 0 && (
                 <span className="mt-0.5 inline-flex items-center gap-1 rounded-lg bg-lime/40 px-2 py-0.5 text-xs font-semibold text-gray-800">
                   <Sparkles size={10} /> {offer.score}% match
@@ -122,7 +124,7 @@ export function OfferCard({
               <Gift size={18} className="text-primary" /> Your Promo Code
             </DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted">Use this code at checkout for {offer.company}</p>
+          <p className="text-sm text-muted">Use this code at checkout for {brand}</p>
           <div className="mt-3 flex items-center gap-2">
             <div className="flex-1 rounded-2xl bg-surface px-4 py-3 text-center font-mono text-lg font-bold tracking-wider text-gray-900">
               {promoCode}

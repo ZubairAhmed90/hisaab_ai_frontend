@@ -22,9 +22,9 @@ type Limit = {
   monthly_limit: number;
   alert_at_percent: number;
   is_hard_limit: boolean;
-  target_user: { name: string; id: number };
-  owner_id: number;
+  target_name?: string;
   target_user_id: number;
+  owner_id?: number;
 };
 
 // Card for a limit set by the current user
@@ -67,7 +67,7 @@ export function LimitSetCard({ limit, currentUserId }: { limit: Limit; currentUs
               </span>
               <span className="inline-flex items-center gap-1 rounded-lg bg-white/60 px-2 py-0.5 text-xs font-medium text-muted">
                 <User size={10} />
-                {isForPartner ? limit.target_user.name : 'Myself'}
+                {isForPartner ? limit.target_name || 'Partner' : 'Myself'}
               </span>
             </div>
           </div>

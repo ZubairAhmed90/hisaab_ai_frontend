@@ -97,17 +97,22 @@ export function RegisterForm() {
         password: values.password,
         phone: values.phone.trim() || undefined,
         monthly_income: values.monthly_income ? Number(values.monthly_income) : undefined,
-        preferred_language: lang,
       });
+      const { accessToken, user } = res.data.data;
+      if (!accessToken) throw new Error('Invalid response');
+      setToken(accessToken);
+      const registeredUser = user
+        ? { ...user, preferred_language: lang }
+        : {
+            id: 0,
+            name: values.name.trim(),
+            email: values.email.trim(),
+            preferred_language: lang,
+            monthly_income: Number(values.monthly_income) || 0,
+          };
+      setUser(registeredUser);
       setLang(lang, { persistProfile: false });
-      setToken(res.data.data.accessToken);
-      setUser({
-        id: 0,
-        name: values.name.trim(),
-        email: values.email.trim(),
-        preferred_language: lang,
-        monthly_income: Number(values.monthly_income) || 0,
-      });
+      await api.put('/auth/profile', { preferred_language: lang }).catch(() => undefined);
       router.push('/dashboard');
     } catch {
       setServerError(t('auth.registerFailed'));
