@@ -1,6 +1,7 @@
 'use client';
 
 import { Sidebar } from '@/components/layout/Sidebar';
+import { AuthSync } from '@/components/shared/AuthSync';
 import ProtectedRoute from '@/components/shared/ProtectedRoute';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
@@ -10,6 +11,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <ProtectedRoute>
+      <AuthSync />
       <div
         className={cn(
           'flex min-h-screen bg-surface',
