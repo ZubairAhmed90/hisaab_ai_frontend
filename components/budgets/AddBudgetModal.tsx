@@ -1,16 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { PieChart, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { CategorySelect } from '@/components/shared/CategorySelect';
+import { AppFormModal, FormField, ModalActions } from '@/components/shared/AppFormModal';
 import { useAddBudget } from '@/lib/hooks';
 
-// Modal to create a new monthly budget
+const FORM_ID = 'add-budget-form';
+
 export function AddBudgetModal({ trigger }: { trigger?: React.ReactNode }) {
   const mutation = useAddBudget();
   const [open, setOpen] = useState(false);
@@ -33,38 +33,43 @@ export function AddBudgetModal({ trigger }: { trigger?: React.ReactNode }) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        {trigger || (
+    <AppFormModal
+      open={open}
+      onOpenChange={setOpen}
+      trigger={
+        trigger || (
           <Button className="gap-2">
             <Plus size={16} /> Add Budget
           </Button>
-        )}
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Add Budget</DialogTitle>
-        </DialogHeader>
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-2">
-            <Label>Category</Label>
-            <CategorySelect value={category} onChange={setCategory} />
-          </div>
-          <div className="space-y-2">
-            <Label>Monthly Limit (PKR)</Label>
-            <Input
-              type="number"
-              placeholder="e.g. 15000"
-              value={limit}
-              onChange={(e) => setLimit(e.target.value)}
-              required
-            />
-          </div>
-          <Button type="submit" className="w-full" disabled={mutation.isPending}>
-            {mutation.isPending ? 'Saving...' : 'Create Budget'}
-          </Button>
-        </form>
-      </DialogContent>
-    </Dialog>
+        )
+      }
+      title="Add Budget"
+      description="Set a monthly spending cap for a category."
+      icon={PieChart}
+      footer={
+        <ModalActions
+          formId={FORM_ID}
+          onCancel={() => setOpen(false)}
+          submitLabel="Create Budget"
+          isSubmitting={mutation.isPending}
+        />
+      }
+    >
+      <form id={FORM_ID} className="space-y-4" onSubmit={handleSubmit}>
+        <FormField label="Category">
+          <CategorySelect value={category} onChange={setCategory} />
+        </FormField>
+        <FormField label="Monthly limit (PKR)" hint="You will get alerts as you approach this amount.">
+          <Input
+            type="number"
+            placeholder="e.g. 15000"
+            className="font-number"
+            value={limit}
+            onChange={(e) => setLimit(e.target.value)}
+            required
+          />
+        </FormField>
+      </form>
+    </AppFormModal>
   );
 }

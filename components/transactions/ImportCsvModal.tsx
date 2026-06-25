@@ -1,14 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Upload } from 'lucide-react';
+import { FileSpreadsheet, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AppFormModal } from '@/components/shared/AppFormModal';
 import api from '@/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
 
-// Modal to import transactions from a CSV file
 export function ImportCsvModal() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -34,36 +33,51 @@ export function ImportCsvModal() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
+    <AppFormModal
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (!next) setFile(null);
+      }}
+      trigger={
         <Button variant="outline" className="gap-2">
           <Upload size={16} /> Import CSV
         </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Import CSV</DialogTitle>
-        </DialogHeader>
-        <p className="text-sm text-muted">
-          Upload a bank statement CSV from UBL, HBL, or other supported banks.
-        </p>
-        <label className="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-surface/50 px-6 py-8 transition-colors hover:border-primary/30 hover:bg-surface">
-          <Upload size={24} className="mb-2 text-muted" />
-          <span className="text-sm font-medium text-gray-700">
-            {file ? file.name : 'Choose a CSV file'}
-          </span>
-          <span className="mt-1 text-xs text-muted">Click to browse</span>
-          <input
-            type="file"
-            accept=".csv"
-            className="hidden"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
-          />
-        </label>
-        <Button className="mt-4 w-full" disabled={!file || loading} onClick={handleUpload}>
-          {loading ? 'Uploading...' : 'Upload CSV'}
-        </Button>
-      </DialogContent>
-    </Dialog>
+      }
+      title="Import CSV"
+      description="Upload a bank statement CSV from UBL, HBL, or other supported banks."
+      icon={FileSpreadsheet}
+      footer={
+        <>
+          <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            disabled={!file || loading}
+            onClick={handleUpload}
+            className="bg-lime text-gray-900 shadow-[0_4px_14px_rgba(232,255,87,0.35)] hover:bg-lime/90 hover:text-gray-900"
+          >
+            {loading ? 'Uploading…' : 'Upload CSV'}
+          </Button>
+        </>
+      }
+    >
+      <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border/80 bg-surface/50 px-6 py-10 transition-all hover:border-lime/50 hover:bg-lime/5">
+        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+          <Upload size={22} className="text-primary" />
+        </div>
+        <span className="text-sm font-semibold text-gray-900">
+          {file ? file.name : 'Choose a CSV file'}
+        </span>
+        <span className="mt-1 text-xs text-muted">Click to browse · .csv only</span>
+        <input
+          type="file"
+          accept=".csv"
+          className="hidden"
+          onChange={(e) => setFile(e.target.files?.[0] || null)}
+        />
+      </label>
+    </AppFormModal>
   );
 }

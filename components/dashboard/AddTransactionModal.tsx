@@ -1,16 +1,22 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { Receipt } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { CategorySelect } from '@/components/shared/CategorySelect';
+import {
+  AppFormModal,
+  FormField,
+  ModalActions,
+  ModalAlert,
+} from '@/components/shared/AppFormModal';
 import { useAddTransaction, useLimitsMine } from '@/lib/hooks';
 import { formatPKR } from '@/lib/utils';
 
-// Modal form to add a new transaction with limit warnings
+const FORM_ID = 'add-transaction-form';
+
 export function AddTransactionModal({ trigger }: { trigger?: React.ReactNode }) {
   const mutation = useAddTransaction();
   const { data: limits } = useLimitsMine();
@@ -33,7 +39,15 @@ export function AddTransactionModal({ trigger }: { trigger?: React.ReactNode }) 
 
   const blocked = limitCheck?.exceeded && limitCheck.match.is_hard_limit;
 
-  // Submit new transaction to the API
+  const resetForm = () => {
+    setForm({
+      amount: '',
+      description: '',
+      date: new Date().toISOString().split('T')[0],
+      category: 'other',
+    });
+  };
+
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (blocked) return;
@@ -43,7 +57,7 @@ export function AddTransactionModal({ trigger }: { trigger?: React.ReactNode }) 
         onSuccess: () => {
           toast.success('Transaction added!');
           setOpen(false);
-          setForm({ amount: '', description: '', date: new Date().toISOString().split('T')[0], category: 'other' });
+          resetForm();
         },
         onError: (err) => {
           const message = (err as { response?: { data?: { message?: string } } }).response?.data?.message;
@@ -54,27 +68,61 @@ export function AddTransactionModal({ trigger }: { trigger?: React.ReactNode }) 
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>{trigger || <Button>Add Transaction</Button>}</DialogTrigger>
-      <DialogContent>
-        <DialogHeader><DialogTitle>Add Transaction</DialogTitle></DialogHeader>
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-2"><Label>Amount</Label><Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required /></div>
-          <div className="space-y-2"><Label>Description</Label><Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required /></div>
-          <div className="space-y-2"><Label>Date</Label><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required /></div>
-          <div className="space-y-2"><Label>Category</Label><CategorySelect value={form.category} onChange={(category) => setForm({ ...form, category })} /></div>
-          {limitCheck && (
-            <p className={`text-sm ${blocked ? 'text-red-600' : 'text-amber-600'}`}>
-              {blocked
-                ? `⚠️ This will exceed your ${formatPKR(limitCheck.cap)} ${form.category} limit`
-                : `⚠️ Approaching your ${formatPKR(limitCheck.cap)} ${form.category} limit`}
-            </p>
-          )}
-          <Button type="submit" className="w-full" disabled={mutation.isPending || blocked}>
-            {mutation.isPending ? 'Saving...' : 'Save Transaction'}
-          </Button>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <AppFormModal
+      open={open}
+      onOpenChange={setOpen}
+      trigger={trigger || <Button>Add Transaction</Button>}
+      title="Add Transaction"
+      description="Log income or spending to keep your account up to date."
+      icon={Receipt}
+      footer={
+        <ModalActions
+          formId={FORM_ID}
+          onCancel={() => setOpen(false)}
+          submitLabel="Save Transaction"
+          isSubmitting={mutation.isPending}
+          submitDisabled={blocked}
+        />
+      }
+    >
+      <form id={FORM_ID} className="space-y-4" onSubmit={handleSubmit}>
+        <FormField label="Amount (PKR)">
+          <Input
+            type="number"
+            placeholder="e.g. 2500"
+            className="font-number text-base"
+            value={form.amount}
+            onChange={(e) => setForm({ ...form, amount: e.target.value })}
+            required
+          />
+        </FormField>
+        <FormField label="Description">
+          <Input
+            placeholder="What was this for?"
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            required
+          />
+        </FormField>
+        <FormField label="Date">
+          <Input
+            type="date"
+            value={form.date}
+            onChange={(e) => setForm({ ...form, date: e.target.value })}
+            required
+          />
+        </FormField>
+        <FormField label="Category">
+          <CategorySelect value={form.category} onChange={(category) => setForm({ ...form, category })} />
+        </FormField>
+        {limitCheck ? (
+          <ModalAlert variant={blocked ? 'danger' : 'warning'}>
+            {blocked
+              ? `This will exceed your ${formatPKR(limitCheck.cap)} ${form.category} limit.`
+              : `You are approaching your ${formatPKR(limitCheck.cap)} ${form.category} limit.`}
+          </ModalAlert>
+        ) : null}
+      </form>
+    </AppFormModal>
   );
 }

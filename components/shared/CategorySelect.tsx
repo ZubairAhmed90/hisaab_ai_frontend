@@ -20,7 +20,7 @@ export function CategorySelect({
 }) {
   return (
     <Select value={value} onValueChange={(v) => onChange(v as string)}>
-      <SelectTrigger>
+      <SelectTrigger className="h-10 rounded-xl border-0 bg-surface">
         <SelectValue placeholder="Select category" />
       </SelectTrigger>
       <SelectContent>
