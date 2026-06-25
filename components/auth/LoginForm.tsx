@@ -88,8 +88,22 @@ export function LoginForm() {
       if (user?.preferred_language) setLang(user.preferred_language, { persistProfile: false });
       toast.success(t('auth.welcomeBack'));
       router.push('/dashboard');
-    } catch {
-      setServerError(t('auth.loginFailed'));
+    } catch (err: unknown) {
+      const axiosErr = err as {
+        response?: { status?: number; data?: { message?: string } };
+        message?: string;
+        code?: string;
+      };
+      const apiMsg = axiosErr.response?.data?.message;
+      if (!axiosErr.response) {
+        setServerError(
+          'Cannot reach the server. Use HTTPS API URL in Vercel: https://hisaab.petzone.pk',
+        );
+      } else if (axiosErr.response.status === 401) {
+        setServerError(t('auth.loginFailed'));
+      } else {
+        setServerError(typeof apiMsg === 'string' ? apiMsg : t('auth.loginFailed'));
+      }
     } finally {
       setLoading(false);
     }

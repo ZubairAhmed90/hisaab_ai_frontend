@@ -114,9 +114,21 @@ export function RegisterForm() {
       setLang(lang, { persistProfile: false });
       await api.put('/auth/profile', { preferred_language: lang }).catch(() => undefined);
       router.push('/dashboard');
-    } catch {
-      setServerError(t('auth.registerFailed'));
-      toast.error(t('auth.registerFailed'));
+    } catch (err: unknown) {
+      const axiosErr = err as {
+        response?: { status?: number; data?: { message?: string } };
+      };
+      const apiMsg = axiosErr.response?.data?.message;
+      if (!axiosErr.response) {
+        setServerError(
+          'Cannot reach the server. Set Vercel env NEXT_PUBLIC_API_URL=https://hisaab.petzone.pk and redeploy.',
+        );
+      } else if (axiosErr.response.status === 409) {
+        setServerError(t('auth.registerFailed'));
+      } else {
+        setServerError(typeof apiMsg === 'string' ? apiMsg : t('auth.registerFailed'));
+      }
+      toast.error(typeof apiMsg === 'string' ? apiMsg : t('auth.registerFailed'));
     } finally {
       setLoading(false);
     }
