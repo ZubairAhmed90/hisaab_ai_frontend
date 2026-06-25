@@ -12,27 +12,27 @@ import {
   PasswordField,
 } from '@/components/auth/PasswordField';
 import {
-  validateEmail,
   validateLoginPassword,
+  validateUserId,
 } from '@/lib/auth/validation';
 import { useFormValidation } from '@/lib/auth/useFormValidation';
 import api from '@/lib/api';
 import { useTranslation } from '@/lib/i18n';
 import { useAuthStore } from '@/lib/store';
 
-type LoginValues = { email: string; password: string };
+type LoginValues = { userId: string; password: string };
 
 export function LoginForm() {
   const router = useRouter();
   const { setToken, setUser } = useAuthStore();
   const { t, setLang } = useTranslation();
-  const [values, setValues] = useState<LoginValues>({ email: '', password: '' });
+  const [values, setValues] = useState<LoginValues>({ userId: '', password: '' });
   const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const schema = useMemo(
     () => ({
-      email: [validateEmail],
+      userId: [validateUserId],
       password: [validateLoginPassword],
     }),
     [],
@@ -68,8 +68,9 @@ export function LoginForm() {
 
     setLoading(true);
     try {
+      const trimmedUserId = values.userId.trim();
       const res = await api.post('/auth/login', {
-        email: values.email.trim(),
+        email: trimmedUserId,
         password: values.password,
       });
       const { accessToken, user } = res.data.data;
@@ -79,8 +80,8 @@ export function LoginForm() {
       setUser(
         user || {
           id: 0,
-          name: values.email.split('@')[0],
-          email: values.email.trim(),
+          name: trimmedUserId.split('@')[0] || 'User',
+          email: trimmedUserId.includes('@') ? trimmedUserId : '',
           preferred_language: preferred,
           monthly_income: 0,
         },
@@ -111,19 +112,19 @@ export function LoginForm() {
 
   return (
     <>
-      <AuthPageHeader title={t('auth.welcomeBack')} subtitle={t('auth.signIn')} />
+      <AuthPageHeader title={t('auth.welcomeBack')} subtitle={t('auth.signInWithUserId')} />
 
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         <AuthInput
-          id="email"
-          label={t('auth.email')}
-          type="email"
-          value={values.email}
-          onChange={(v) => update('email', v)}
-          onBlur={() => handleBlur('email')}
-          error={fieldError('email')}
-          placeholder="name@example.com"
-          autoComplete="email"
+          id="userId"
+          label={t('auth.userIdLabel')}
+          type="text"
+          value={values.userId}
+          onChange={(v) => update('userId', v)}
+          onBlur={() => handleBlur('userId')}
+          error={fieldError('userId')}
+          placeholder={t('auth.userIdPlaceholder')}
+          autoComplete="username"
         />
 
         <PasswordField

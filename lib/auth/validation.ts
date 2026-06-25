@@ -17,6 +17,13 @@ export function validateRequired(value: string, key = 'auth.validation.required'
   return value.trim() ? null : key;
 }
 
+export function validateUserId(value: string): ValidationKey | null {
+  const trimmed = value.trim();
+  if (!trimmed) return 'auth.validation.userIdRequired';
+  if (trimmed.length < 3) return 'auth.validation.userIdMinLength';
+  return null;
+}
+
 export function validateEmail(value: string): ValidationKey | null {
   const trimmed = value.trim();
   if (!trimmed) return 'auth.validation.emailRequired';
