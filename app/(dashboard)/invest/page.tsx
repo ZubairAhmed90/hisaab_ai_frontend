@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import SkeletonCard from '@/components/shared/SkeletonCard';
-import { useBuyStock, useMarket, usePortfolio, useSellStock } from '@/lib/hooks';
+import { useBuyStock, useMarket, usePortfolio, useSellStock, useStockTrades } from '@/lib/hooks';
 import { useTranslation } from '@/lib/i18n';
 import { cn, formatPKR } from '@/lib/utils';
 
@@ -18,6 +18,8 @@ export default function InvestPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [qty, setQty] = useState('1');
   const [mode, setMode] = useState<'buy' | 'sell'>('buy');
+  const trades = useStockTrades(selected, 7);
+  const walletBefore = portfolio.data?.wallet_balance || 0;
 
   if (portfolio.isLoading || market.isLoading) {
     return (
@@ -42,11 +44,17 @@ export default function InvestPage() {
     try {
       if (mode === 'buy') {
         await buyStock.mutateAsync({ ticker: selected, quantity });
-        toast.success(`Bought ${quantity} ${selected}`);
+        toast.success(`Bought ${quantity} ${selected}`, {
+          description: `Wallet: ${formatPKR(walletBefore)} → ${formatPKR(walletBefore - total)}`,
+        });
       } else {
         await sellStock.mutateAsync({ ticker: selected, quantity });
-        toast.success(`Sold ${quantity} ${selected} — ${formatPKR(total)} added to stocks wallet`);
+        toast.success(`Sold ${quantity} ${selected}`, {
+          description: `${formatPKR(total)} to wallet · ${formatPKR(walletBefore)} → ${formatPKR(walletBefore + total)}`,
+        });
       }
+      await portfolio.refetch();
+      trades.refetch();
       setQty('1');
     } catch (e: unknown) {
       const msg = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
@@ -138,6 +146,52 @@ export default function InvestPage() {
           ) : (
             <p className="text-sm text-muted">Select a stock to buy or sell</p>
           )}
+
+          {holdings.length > 0 ? (
+            <div className="mt-8 border-t border-border/50 pt-6">
+              <h3 className="text-sm font-bold uppercase tracking-wide text-muted">{t('invest.holdings')}</h3>
+              <div className="mt-3 space-y-2">
+                {holdings.map((h: { ticker: string; quantity: number; return_pct: number }) => (
+                  <button
+                    key={h.ticker}
+                    type="button"
+                    onClick={() => setSelected(h.ticker)}
+                    className={cn(
+                      'flex w-full items-center justify-between rounded-xl border px-3 py-2 text-left text-sm transition-all',
+                      selected === h.ticker ? 'border-primary bg-primary/5' : 'border-border/40 hover:border-primary/25',
+                    )}
+                  >
+                    <span className="font-semibold">{h.ticker} · {h.quantity} sh</span>
+                    <span className={cn('font-bold', h.return_pct >= 0 ? 'text-success' : 'text-danger')}>
+                      {h.return_pct >= 0 ? '+' : ''}{h.return_pct}%
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {selected && (trades.data?.length ?? 0) > 0 ? (
+            <div className="mt-6 border-t border-border/50 pt-6">
+              <h3 className="text-sm font-bold text-gray-900">Trade history — {selected}</h3>
+              <p className="text-xs text-muted">Last 7 days</p>
+              <ul className="mt-3 max-h-48 space-y-2 overflow-y-auto text-sm">
+                {trades.data.map((tr: { id: number; side: string; quantity: number; price_pkr: number; created_at: string; wallet_balance_before?: number; wallet_balance_after?: number }) => (
+                  <li key={tr.id} className="rounded-lg bg-surface px-3 py-2">
+                    <p className={cn('font-semibold capitalize', tr.side === 'buy' ? 'text-success' : 'text-danger')}>
+                      {tr.side} {Number(tr.quantity)} @ Rs {Number(tr.price_pkr).toFixed(2)}
+                    </p>
+                    <p className="text-xs text-muted">{new Date(tr.created_at).toLocaleString()}</p>
+                    {tr.wallet_balance_before != null ? (
+                      <p className="text-xs text-muted">
+                        Wallet: {formatPKR(tr.wallet_balance_before)} → {formatPKR(tr.wallet_balance_after ?? tr.wallet_balance_before)}
+                      </p>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

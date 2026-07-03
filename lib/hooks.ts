@@ -12,10 +12,26 @@ export function useTransactionSummary() {
 }
 
 // Fetch paginated user transactions
-export function useTransactions(page = 1, limit = 20) {
+export function useTransactions(page = 1, limit = 20, filters?: { merchant?: string; linked_user_id?: number }) {
   return useQuery({
-    queryKey: ['transactions', page, limit],
-    queryFn: async () => (await api.get('/transactions', { params: { page, limit } })).data.data,
+    queryKey: ['transactions', page, limit, filters],
+    queryFn: async () => (await api.get('/transactions', { params: { page, limit, ...filters } })).data.data,
+  });
+}
+
+export function useTransaction(id?: number) {
+  return useQuery({
+    queryKey: ['transactions', id],
+    enabled: !!id,
+    queryFn: async () => (await api.get(`/transactions/${id}`)).data.data,
+  });
+}
+
+export function useStockTrades(ticker?: string | null, days = 7) {
+  return useQuery({
+    queryKey: ['trades', ticker, days],
+    enabled: !!ticker,
+    queryFn: async () => (await api.get('/portfolio/trades', { params: { ticker, days, limit: 50 } })).data.data,
   });
 }
 
