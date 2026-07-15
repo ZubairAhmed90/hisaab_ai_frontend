@@ -4,7 +4,6 @@ import { Menu } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { useTranslation } from '@/lib/i18n';
 import { PAGE_TITLES } from '@/lib/nav';
 import { useAuthStore } from '@/lib/store';
 
