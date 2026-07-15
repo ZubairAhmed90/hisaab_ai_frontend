@@ -15,7 +15,8 @@ export function getWeeklySpending(
     const date = new Date(txn.transaction_date);
     if (date < weekStart) continue;
     const dayIndex = (date.getDay() + 6) % 7;
-    totals[dayIndex] += Number(txn.amount);
+    // Debits are stored negative — chart should show spending as positive
+    totals[dayIndex] += Math.abs(Number(txn.amount));
   }
 
   return WEEK_DAYS.map((day, index) => ({ day, amount: totals[index] }));
@@ -47,7 +48,7 @@ export function getMonthlySpending(
   for (const txn of transactions) {
     if (txn.category === 'income') continue;
     const key = txn.transaction_date.slice(0, 7);
-    if (key in totals) totals[key] += Number(txn.amount);
+    if (key in totals) totals[key] += Math.abs(Number(txn.amount));
   }
 
   return months.map((m) => ({
@@ -71,7 +72,7 @@ export function getYearlySpending(
     if (txn.category === 'income') continue;
     const date = new Date(txn.transaction_date);
     if (date.getFullYear() !== year) continue;
-    totals[date.getMonth()].amount += Number(txn.amount);
+    totals[date.getMonth()].amount += Math.abs(Number(txn.amount));
   }
 
   return totals;

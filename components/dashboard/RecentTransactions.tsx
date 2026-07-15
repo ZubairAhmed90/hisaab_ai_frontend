@@ -42,7 +42,8 @@ export function RecentTransactions({ transactions }: { transactions: Txn[] }) {
         ) : (
           recent.map((tx) => {
             const amount = Number(tx.amount);
-            const isIncome = tx.category === 'income';
+            // Sign follows ledger amount (receive = positive credit, send = negative debit)
+            const isCredit = amount >= 0;
             return (
               <div
                 key={tx.id}
@@ -56,9 +57,9 @@ export function RecentTransactions({ transactions }: { transactions: Txn[] }) {
                   <p className="text-xs capitalize text-muted">{tx.category}</p>
                 </div>
                 <span
-                  className={`font-number shrink-0 text-sm font-semibold ${isIncome ? 'text-success' : 'text-danger'}`}
+                  className={`font-number shrink-0 text-sm font-semibold ${isCredit ? 'text-success' : 'text-danger'}`}
                 >
-                  {isIncome ? '+' : '-'}
+                  {isCredit ? '+' : '-'}
                   {formatPKR(Math.abs(amount))}
                 </span>
               </div>

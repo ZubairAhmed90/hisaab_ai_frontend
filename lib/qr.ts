@@ -11,14 +11,18 @@ export function buildAccountId(uid: number) {
   return `HA-${String(uid).padStart(6, '0')}`;
 }
 
-export function buildPayQrPayload(user: { id?: number; name?: string }, amount?: number): PayQrPayload {
+export function buildPayQrPayload(
+  user: { id?: number; name?: string; account_number?: string | null },
+  amount?: number,
+): PayQrPayload {
   const uid = user.id ?? 0;
   return {
     v: 1,
     type: 'hisaab_pay',
     name: user.name || 'HisaabAI User',
     uid,
-    account: buildAccountId(uid),
+    // Prefer real DB account_number so QR matches Balance card (e.g. HA-746991)
+    account: user.account_number || buildAccountId(uid),
     ...(amount && amount > 0 ? { amount } : {}),
   };
 }

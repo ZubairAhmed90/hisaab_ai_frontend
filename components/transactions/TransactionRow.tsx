@@ -18,8 +18,8 @@ type Transaction = {
 // Single transaction row in card-list style
 export function TransactionRow({ txn }: { txn: Transaction }) {
   const deleteTxn = useDeleteTransaction();
-  const isIncome = txn.category === 'income';
   const amount = Number(txn.amount);
+  const isCredit = amount >= 0;
 
   const handleDelete = () => {
     if (!confirm('Delete this transaction?')) return;
@@ -46,9 +46,9 @@ export function TransactionRow({ txn }: { txn: Transaction }) {
 
       <div className="flex shrink-0 items-center gap-2">
         <span
-          className={`font-number text-sm font-bold ${isIncome ? 'text-success' : 'text-danger'}`}
+          className={`font-number text-sm font-bold ${isCredit ? 'text-success' : 'text-danger'}`}
         >
-          {isIncome ? '+' : '-'}
+          {isCredit ? '+' : '-'}
           {formatPKR(Math.abs(amount))}
         </span>
         <Button

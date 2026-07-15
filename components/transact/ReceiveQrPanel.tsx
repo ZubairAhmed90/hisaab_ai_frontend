@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import QRCode from 'react-qr-code';
 import { Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { buildPayQrPayload, encodePayQr, buildAccountId } from '@/lib/qr';
+import { buildPayQrPayload, encodePayQr } from '@/lib/qr';
+import { useMe, usePortfolio } from '@/lib/hooks';
 import { useAuthStore } from '@/lib/store';
 import { cn, formatPKR } from '@/lib/utils';
 
@@ -18,16 +19,32 @@ export function ReceiveQrPanel({
   compact?: boolean;
 }) {
   const user = useAuthStore((s) => s.user);
+  const me = useMe();
+  const portfolio = usePortfolio();
   const [amount, setAmount] = useState('');
   const [copied, setCopied] = useState(false);
 
+  const profile = me.data ?? user;
+  const accountNumber =
+    (portfolio.data?.account_number as string | undefined) ||
+    (profile as { account_number?: string | null })?.account_number ||
+    '';
+
   const numAmount = amount ? Number(amount) : undefined;
-  const payload = buildPayQrPayload(
-    { id: user?.id, name: user?.name },
-    numAmount && numAmount > 0 ? numAmount : undefined,
+  const payload = useMemo(
+    () =>
+      buildPayQrPayload(
+        {
+          id: profile?.id,
+          name: profile?.name,
+          account_number: accountNumber || undefined,
+        },
+        numAmount && numAmount > 0 ? numAmount : undefined,
+      ),
+    [profile?.id, profile?.name, accountNumber, numAmount],
   );
   const qrValue = encodePayQr(payload);
-  const account = user?.id ? buildAccountId(user.id) : payload.account;
+  const account = accountNumber || payload.account;
   const qrSize = compact ? 120 : 180;
 
   const copyAccount = async () => {
@@ -48,10 +65,10 @@ export function ReceiveQrPanel({
         {!compact ? (
           <>
             <p className="text-center text-sm font-medium text-black/50">Your payment QR</p>
-            <p className="text-center text-lg font-bold text-gray-900">{user?.name || 'Your Account'}</p>
+            <p className="text-center text-lg font-bold text-gray-900">{profile?.name || 'Your Account'}</p>
           </>
         ) : (
-          <p className="mb-3 text-center text-sm font-semibold text-gray-900">{user?.name}</p>
+          <p className="mb-3 text-center text-sm font-semibold text-gray-900">{profile?.name}</p>
         )}
 
         <div className={cn('mx-auto flex w-fit rounded-xl bg-white shadow-md', compact ? 'my-3 p-2' : 'my-5 p-4')}>
