@@ -8,12 +8,10 @@ import { useAuthStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
 type Props = {
-  /** Icon-only power button for page headers */
-  compact?: boolean;
   className?: string;
 };
 
-export function LogoutButton({ compact = true, className }: Props) {
+export function LogoutButton({ className }: Props) {
   const { t } = useTranslation();
   const logout = useAuthStore((s) => s.logout);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -29,33 +27,21 @@ export function LogoutButton({ compact = true, className }: Props) {
 
   return (
     <>
-      <button
+      <Button
         type="button"
+        variant="destructive"
+        size="sm"
         onClick={() => setConfirmOpen(true)}
-        title={t('common.logout')}
         aria-label={t('common.logout')}
         className={cn(
-          compact
-            ? [
-                'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
-                'bg-[#FCEBEB] text-[#E24B4A] shadow-sm',
-                'transition-all duration-200 hover:bg-[#E24B4A]/12 hover:shadow-md',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E24B4A]/30',
-                'active:scale-[0.96]',
-              ]
-            : [
-                'inline-flex h-9 items-center gap-2 rounded-xl border border-transparent px-2.5',
-                'text-sm font-medium text-[#86868B] transition-all duration-200',
-                'hover:border-[#E24B4A]/20 hover:bg-[#FCEBEB] hover:text-[#E24B4A]',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E24B4A]/30',
-                'active:scale-[0.98]',
-              ],
+          'shrink-0 gap-2 border border-[#E24B4A]/15 px-3.5 shadow-sm',
+          'hover:border-[#E24B4A]/25 active:scale-[0.98]',
           className,
         )}
       >
-        <Power className={cn(compact ? 'h-[18px] w-[18px]' : 'h-4 w-4')} strokeWidth={2.2} />
-        {!compact ? <span className="hidden sm:inline">{t('common.logout')}</span> : null}
-      </button>
+        <Power className="h-4 w-4" strokeWidth={2.2} />
+        <span>{t('common.logout')}</span>
+      </Button>
 
       {confirmOpen ? (
         <div
@@ -72,7 +58,7 @@ export function LogoutButton({ compact = true, className }: Props) {
           >
             <div className="border-b border-[#F0F0F2] bg-gradient-to-br from-[#FAFAFA] to-white px-5 py-5">
               <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-[#FCEBEB]">
-                <LogOut className="h-5 w-5 text-[#E24B4A]" />
+                <Power className="h-5 w-5 text-[#E24B4A]" strokeWidth={2.2} />
               </div>
               <h3 id="logout-dialog-title" className="text-lg font-semibold text-[#1A1A2E]">
                 {t('menu.logoutConfirmTitle')}
@@ -99,7 +85,7 @@ export function LogoutButton({ compact = true, className }: Props) {
                   logout();
                 }}
               >
-                <LogOut className="h-4 w-4" />
+                <Power className="h-4 w-4" strokeWidth={2.2} />
                 {t('common.logout')}
               </Button>
             </div>

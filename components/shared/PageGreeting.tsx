@@ -5,10 +5,10 @@ type Props = {
   subtitle?: string;
 };
 
-/** Page title row with greeting on the left and logout on the right */
+/** Page title row with greeting on the left and logout button on the right */
 export function PageGreeting({ title, subtitle }: Props) {
   return (
-    <div className="flex items-start justify-between gap-4">
+    <div className="flex items-center justify-between gap-4">
       <div className="min-w-0 flex-1">
         <h1 className="text-2xl font-bold tracking-tight text-gray-900">{title}</h1>
         {subtitle ? <p className="mt-1 text-sm text-muted">{subtitle}</p> : null}
