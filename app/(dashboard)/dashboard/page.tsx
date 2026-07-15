@@ -9,6 +9,7 @@ import { SpendingChart } from '@/components/dashboard/SpendingChart';
 import { PartnerSummaryCard } from '@/components/limits/PartnerSummaryCard';
 import { InvestmentPortfolioCard } from '@/components/portfolio/InvestmentPortfolioCard';
 import SkeletonCard from '@/components/shared/SkeletonCard';
+import { PageGreeting } from '@/components/shared/PageGreeting';
 import { getMonthlySpending, getWeeklySpending, getYearlySpending, sumSpending } from '@/lib/chart.helpers';
 import { useTransactionSummary, useTransactions } from '@/lib/hooks';
 import { useGreeting, useTranslation } from '@/lib/i18n';
@@ -46,12 +47,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900">
-          {greeting}, {firstName}
-        </h1>
-        <p className="mt-1 text-sm text-muted">{t('dashboard.overview')}</p>
-      </div>
+      <PageGreeting title={`${greeting}, ${firstName}`} subtitle={t('dashboard.overview')} />
 
       <LimitWarningBanner />
 
